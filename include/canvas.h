@@ -4,15 +4,18 @@
 typedef struct {
     int width;
     int height;
-    float* pixels;  // Single pointer to float array
+    float* pixels;
 } canvas_t;
 
-// Use consistent naming (either all with canvas_ prefix or none)
 canvas_t* create_canvas(int width, int height);
-void free_canvas(canvas_t* canvas);
 void canvas_clear(canvas_t* canvas, float value);
-void set_pixel_f(canvas_t* canvas, float x, float y, float intensity);
-void draw_line_f(canvas_t* canvas, float x0, float y0, float x1, float y1, float thickness);
+void set_pixel_f(canvas_t* canvas, int x, int y, float intensity);
 void save_canvas_as_pgm(canvas_t* canvas, const char* filename);
+void draw_clock_lines(canvas_t* canvas, float radius, float thickness);
+void draw_line_f(canvas_t* canvas, float x0, float y0, float x1, float y1, float thickness);
+void free_canvas(canvas_t* canvas);  // ← Add this line
 
-#endif
+
+#endif // CANVAS_H
+
+

@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include "math3d.h"
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 canvas_t* create_canvas(int width, int height) {
     canvas_t* canvas = (canvas_t*)malloc(sizeof(canvas_t));
@@ -20,29 +25,14 @@ void free_canvas(canvas_t* canvas) {
 
 void canvas_clear(canvas_t* canvas, float value) {
     for (int i = 0; i < canvas->width * canvas->height; i++) {
-        canvas->pixels[i] = value;  // Direct float assignment
+        canvas->pixels[i] = value;
     }
 }
 
-void set_pixel_f(canvas_t* canvas, float x, float y, float intensity) {
-    int x0 = (int)x;
-    int y0 = (int)y;
-    float fx = x - x0;
-    float fy = y - y0;
-
-    float w00 = (1 - fx) * (1 - fy);
-    float w01 = (1 - fx) * fy;
-    float w10 = fx * (1 - fy);
-    float w11 = fx * fy;
-
-    if (x0 >= 0 && x0 < canvas->width && y0 >= 0 && y0 < canvas->height)
-        canvas->pixels[y0 * canvas->width + x0] += w00 * intensity;
-    if (x0 >= 0 && x0 < canvas->width && (y0 + 1) < canvas->height)
-        canvas->pixels[(y0 + 1) * canvas->width + x0] += w01 * intensity;
-    if ((x0 + 1) < canvas->width && y0 >= 0 && y0 < canvas->height)
-        canvas->pixels[y0 * canvas->width + (x0 + 1)] += w10 * intensity;
-    if ((x0 + 1) < canvas->width && (y0 + 1) < canvas->height)
-        canvas->pixels[(y0 + 1) * canvas->width + (x0 + 1)] += w11 * intensity;
+void set_pixel_f(canvas_t* canvas, int x, int y, float intensity) {
+    // Simplified: just set pixel if within bounds
+    if (x >= 0 && x < canvas->width && y >= 0 && y < canvas->height)
+        canvas->pixels[y * canvas->width + x] += intensity;
 }
 
 void draw_line_f(canvas_t* canvas, float x0, float y0, float x1, float y1, float thickness) {
@@ -58,7 +48,7 @@ void draw_line_f(canvas_t* canvas, float x0, float y0, float x1, float y1, float
         for (float a = 0; a < 2 * M_PI; a += 0.2f) {
             float px = x + thickness * cosf(a);
             float py = y + thickness * sinf(a);
-            set_pixel_f(canvas, px, py, 1.0f);
+            set_pixel_f(canvas, (int)px, (int)py, 1.0f);  // Cast to int as set_pixel_f expects ints
         }
         x += xinc;
         y += yinc;
@@ -80,4 +70,16 @@ void save_canvas_as_pgm(canvas_t* canvas, const char* filename) {
     }
 
     fclose(fp);
+}
+
+void draw_clock_lines(canvas_t* canvas, float radius, float thickness) {
+    float cx = canvas->width / 2.0f;
+    float cy = canvas->height / 2.0f;
+
+    for (int i = 0; i < 24; i++) {
+        float angle = i * (M_PI / 12.0f);
+        float x1 = cx + radius * cosf(angle);
+        float y1 = cy + radius * sinf(angle);
+        draw_line_f(canvas, cx, cy, x1, y1, thickness);
+    }
 }
